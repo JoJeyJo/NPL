@@ -14,12 +14,24 @@ response = urllib2.urlopen(url)
 df = pd.read_csv(response, header=0)
 
 # clean data:
-#   remove null variables (should not have much, might not be worth using averages)
 
+#   1. remove null variables (should not have much, might not be worth using averages)
 
-#   make categorical data numerical 
-#   normalize data 
-#   drop non-necessary data
+#   2. make categorical data numerical 
+#   2.1 - separate categorical and numerical data
+cat_data = []
+num_data = []
+for column in df:
+  if #there is a non numerical entry in the column:
+    #add column to the cat_columns dataframe
+  else:
+    #add column to the num columns dataframe
+
+#   2.2 - make categorical data numerical
+
+#   3. Normalize data 
+
+#   4. Drop non-necessary data
 
 # convert data to numpy array 
 
