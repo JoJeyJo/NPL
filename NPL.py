@@ -126,16 +126,41 @@ test_set, training_set = split_dataframe(loans)
 num_cols = len(training_set[0])-1
 
 def split_target (set): 
-	train_data = []
-	train_target = []
+	data = []
+	target = []
 	for line in set:
-		train_target.append(line[num_cols])
- 		train_data.append(line[0:num_cols])
-	return train_data, train_target 
+ 		data.append(line[0:num_cols])
+		target.append(line[num_cols])
+	return data, target 
 
 #tests: 
-train_d, train_t = split_target(training_set)
+#print 'first line of the training data is %s ' % train_data[0]
+#print 'first line of the training targets is %s' % train_target[0]
 
-print 'first line of the training data is %s ' % train_d[0]
-print 'first line of the training targets is %s' % train_t[0]
+# ---------------------------------------------------------#
+#       Create list in the right format for scikit         #
+# ---------------------------------------------------------#
 
+train_data, train_target = split_target(training_set)
+train_set = [train_data,train_target]
+
+# ---------------------------------------------------------#
+#                     Generate forest                      #
+# ---------------------------------------------------------#
+
+# random forest code
+rf = RandomForestRegressor(n_estimators=150, min_samples_split=2, n_jobs=-1)
+
+# fit the training data
+print('fitting the model')
+predictor = rf.fit(train_data, train_target)
+# run model against test data
+#print predictor
+predictions = rf.predict(train_data)
+
+for i in range(0,5):
+	predicted = predictions [i]
+	actual = train_target[i]
+	print 'Predicted: %1.0f' % predicted
+	print 'Correct: %1.0f' % actual
+	print ''
