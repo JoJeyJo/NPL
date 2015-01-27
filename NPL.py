@@ -65,7 +65,7 @@ def map_uniques(serie):
 	num_map = {}
 	index = 0 
 	for unique in uniques:
-		num_map[unique]= [index]
+		num_map[unique]= index
 		index += 1 
 	return num_map
 
