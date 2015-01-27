@@ -119,4 +119,23 @@ def split_dataframe(dataframe):
 #create test and training set
 test_set, training_set = split_dataframe(loans)
 
-#print test_set[0:2] #expected array of arrays 
+# ---------------------------------------------------------#
+#         Split the training set into data and target      #
+# ---------------------------------------------------------#
+
+num_cols = len(training_set[0])-1
+
+def split_target (set): 
+	train_data = []
+	train_target = []
+	for line in set:
+		train_target.append(line[num_cols])
+ 		train_data.append(line[0:num_cols])
+	return train_data, train_target 
+
+#tests: 
+train_d, train_t = split_target(training_set)
+
+print 'first line of the training data is %s ' % train_d[0]
+print 'first line of the training targets is %s' % train_t[0]
+
