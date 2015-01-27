@@ -1,4 +1,4 @@
-#Random stuff import libraries 
+# Import libraries 
 
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
@@ -13,13 +13,9 @@ url = 'https://trello-attachments.s3.amazonaws.com/54522d0bd5a9e7596679dd06/54c6
 response = urllib2.urlopen(url)
 
 # convert csv data to pandas dataframe 
-
 loans = pd.read_csv(response)
 
-
-# ---------------------------------------------------------#
-#                Drop rows with null variables             #
-# ---------------------------------------------------------#
+# Drop rows with null variables   
 
 loans = loans.dropna()
 
@@ -42,13 +38,9 @@ for parameter in loan_parameters:
 	if is_currency(parameter):
 		loans[parameter] = loans[parameter].map(lambda x: Decimal(x.replace('$', '').replace(',','')))
 		
-#print loans.head(5)
-
-
 # ---------------------------------------------------------#
 #                Make categorical data numerical           #
 # ---------------------------------------------------------#
-
 
 #define what being categorical means: 
 def is_categorical(serie):
@@ -60,7 +52,7 @@ def is_categorical(serie):
 		return False
 
 def map_uniques(serie):
-	# we want to build a dictionary of {unique0: 0, unique1 : 1, ... }
+	# builds a dictionary of {unique0: 0, unique1 : 1, ... }
 	uniques = loans[serie].unique()
 	num_map = {}
 	index = 0 
@@ -71,12 +63,11 @@ def map_uniques(serie):
 
 def map_series(serie):
 	loans[serie] = loans[serie].map(map_uniques(serie)) 
-#	print loans[serie]
 
 """df['Gender_client_num'] = \
 	df['Gender (Client)'].map( {'female': 0, 'male': 1}).astype(int)"""
 
-
+# test results 
 a = 'Gender (Client)'
 print map_series(a)
 print type(loans[a].iloc[1])  # should be an float
