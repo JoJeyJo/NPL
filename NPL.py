@@ -1,4 +1,5 @@
 #Random stuff import libraries 
+
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 import numpy as np
@@ -7,84 +8,94 @@ import csv
 import urllib2
 from decimal import Decimal
 
-
 # import sample data from S3 
 url = 'https://trello-attachments.s3.amazonaws.com/54522d0bd5a9e7596679dd06/54c620fa57b111af46716e5c/a79bc405e58353ef79e2bbbf9adc3290/Mock_data_LGD_-_Sheet1.csv'
 response = urllib2.urlopen(url)
 
 # convert csv data to pandas dataframe 
-df = pd.read_csv(response, header=0 )
 
-# clean data:
-
-#   1. remove null variables (should not have much, might not be worth using averages)
-
-#   2.2 - make categorical data numerical
+loans = pd.read_csv(response)
 
 
-df['Gender_client_num'] = 0   #create new dataframe 
+# ---------------------------------------------------------#
+#                Drop rows with null variables             #
+# ---------------------------------------------------------#
 
-#map it to the gender dataframe, with 0 for F and 1 for M
-df['Gender_client_num'] = \
-	df['Gender (Client)'].map( {'female': 0, 'male': 1}).astype(int)
+loans = loans.dropna()
 
-#print df
+# ---------------------------------------------------------#
+#                Replace currency with Decimal             #
+# ---------------------------------------------------------#
+
+# define what being currency means: 
+def is_currency(serie):
+	if loans[serie].dtypes == 'object':
+		if loans[serie].iloc[1][0] == '$': #if it has a $ on its first line
+			return True
+	else: 
+		return False
+
+# Get a list of index names: 
+loan_parameters = list(loans.columns.values)
+
+for parameter in loan_parameters:
+	if is_currency(parameter):
+		loans[parameter] = loans[parameter].map(lambda x: Decimal(x.replace('$', '').replace(',','')))
+		
+#print loans.head(5)
+
+
+# ---------------------------------------------------------#
+#                Make categorical data numerical           #
+# ---------------------------------------------------------#
+
+
+#define what being categorical means: 
+def is_categorical(serie):
+	first = loans[serie].iloc[1]  #first line
+	#if the first line is a string, then true 
+	if  isinstance(first, str):
+		return True
+	else: 
+		return False
+
+def map_uniques(serie):
+	# we want to build a dictionary of {unique0: 0, unique1 : 1, ... }
+	uniques = loans[serie].unique()
+	num_map = {}
+	index = 0 
+	for unique in uniques:
+		num_map[unique]= [index]
+		index += 1 
+	return num_map
+
+def map_series(serie):
+	loans[serie] = loans[serie].map(map_uniques(serie)) 
+#	print loans[serie]
+
+"""df['Gender_client_num'] = \
+	df['Gender (Client)'].map( {'female': 0, 'male': 1}).astype(int)"""
+
+
+a = 'Gender (Client)'
+print map_series(a)
+print type(loans[a].iloc[1])  # should be an float
+
+#for parameter in loan_parameters:
+#	if is_categorical(parameter):
+#		map_uniques(parameter)
+
+
+# 	2.2.1 - Separate numerical and categorical data 
+
+
+# map new column to the gender dataframe, with 0 for F and 1 for M
 
 # we need to somehow map this over the dataframes that arent INTS
-"""def dollars_dec(x):
-	if type(x) == 'object':
-		return Decimal(x.strip('$'))
-	else:
-	 return x"""
-
-"""def cleanup(item): 
-	return float(str(item).replace("$", ""))"""
 
 # drop the random generator 
-df = df.drop(['Random stuff'], axis=1)
 
 # drop the male and female column 
-df = df.drop(['Gender (Client)'], axis=1)
-
-
-headers = list(df.columns.values)
-
-print 'headers = %s' % headers
-
-
-
-for header in df[headers]: 
-	print header[1] 
-
-	print 'header = %s is a %s' % (header,type(df[header]))
-
-#print df['Unrecovered']
-
-# make a new dataframe with the strings 
-"""df2 = pd.DataFrame() 
-for header in headers:
-	if df[header].dtypes == 'object':
-		df2.append(df[header])"""
-#print df2
-
-# clean the strings and make them floats 
-#remove the dollar signs 
-
-#print df2
-
-"""def dollaraway(x): 
-	if type(x)=='object':
-		print 'yay! object'
-	else: 
-		print 'uuuh, floaty!'   """
-
-
-
-#print df.dtypes[df.dtypes.map(lambda x: x=='object')]
-
-#df2 = df.applymap(dollars_dec)
-
-#print df2
 
 #   3. Convert numbers into decimal format, and normalize data 
 
@@ -98,4 +109,4 @@ for header in headers:
 
 # Fit the training data to the label and create the decision trees
 
-# Test the decision trees and run it on the test data
+# Test the decision trees and run it on the test data	
