@@ -1,26 +1,30 @@
-#Random stuff import libraries 
-
-from sklearn.ensemble import RandomForestRegressor
+#Import libraries 
 import pandas as pd
 import numpy as np
 import pylab as P
 import csv
 import urllib2
+from sklearn.ensemble import RandomForestRegressor
 from decimal import Decimal
+import random
+
+# ---------------------------------------------------------#
+#                           Get data                       #
+# ---------------------------------------------------------#
 
 # import sample data from S3 
 url = 'https://trello-attachments.s3.amazonaws.com/54522d0bd5a9e7596679dd06/54c620fa57b111af46716e5c/a79bc405e58353ef79e2bbbf9adc3290/Mock_data_LGD_-_Sheet1.csv'
 response = urllib2.urlopen(url)
 
 # convert csv data to pandas dataframe 
-
 loans = pd.read_csv(response)
 
 
 # ---------------------------------------------------------#
-#                Drop rows with null variables             #
+#                      Get rid of nulls                    #
 # ---------------------------------------------------------#
 
+# Drop rows with null variables
 loans = loans.dropna()
 
 # ---------------------------------------------------------#
@@ -40,15 +44,12 @@ loan_parameters = list(loans.columns.values)
 
 for parameter in loan_parameters:
 	if is_currency(parameter):
-		loans[parameter] = loans[parameter].map(lambda x: Decimal(x.replace('$', '').replace(',','')))
-		
-#print loans.head(5)
-
+		loans[parameter] = loans[parameter].map(lambda x: float(x.replace('$', '').replace(',','')))
+		# these should not be floats, for greater accuracy they should be Decimal
 
 # ---------------------------------------------------------#
-#                Make categorical data numerical           #
+#                 Make categorical data numerical          #
 # ---------------------------------------------------------#
-
 
 #define what being categorical means: 
 def is_categorical(serie):
@@ -59,6 +60,7 @@ def is_categorical(serie):
 	else: 
 		return False
 
+# make a map of unique values and corresponding numerical values: 
 def map_uniques(serie):
 	# we want to build a dictionary of {unique0: 0, unique1 : 1, ... }
 	uniques = loans[serie].unique()
@@ -69,45 +71,52 @@ def map_uniques(serie):
 		index += 1 
 	return num_map
 
+# map the unique values to the numerical values: 
 def map_series(serie):
 	loans[serie] = loans[serie].map(map_uniques(serie)) 
-#	print loans[serie]
 
-"""df['Gender_client_num'] = \
-	df['Gender (Client)'].map( {'female': 0, 'male': 1}).astype(int)"""
-
-
-a = 'Gender (Client)'
-print map_series(a)
-print loans[a].iloc[1] # should be a 0
-print type(loans[a].iloc[1])  # should be an float
-
-#for parameter in loan_parameters:
-#	if is_categorical(parameter):
-#		map_uniques(parameter)
+# Turn all categorical parameters into numerical parameters  
+for parameter in loan_parameters:
+	if is_categorical(parameter):
+		map_series(parameter)
 
 
-# 	2.2.1 - Separate numerical and categorical data 
-
-
-# map new column to the gender dataframe, with 0 for F and 1 for M
-
-# we need to somehow map this over the dataframes that arent INTS
+# ---------------------------------------------------------#
+#                   Drop unnecessary columns               #
+#           (might come from user interface later)         #
+#          (Should also drop all the Object dtypes)        #
+# ---------------------------------------------------------#
 
 # drop the random generator 
+loans = loans.drop(['Random stuff'], axis = 1) # axis 1 means column
 
-# drop the male and female column 
 
-#   3. Convert numbers into decimal format, and normalize data 
+# ---------------------------------------------------------#
+#             Split into test and training data            #
+# ---------------------------------------------------------#
 
-#   4. Drop non-necessary data
-
-# convert data to numpy array 
 
 # separate data into training and test sets 
+def split_dataframe(dataframe): 
 
-# Create the random forest object which will include all the parameters for the fit
+	# initialize empry training and test sets 
+	training_set = []
+	test_set = []
+	num_rows = loans.shape[0]
+	percent_test = 0.3
 
-# Fit the training data to the label and create the decision trees
+	#randomly assign lines to either trainig or test
+	for line in range(0,num_rows):
+		i = random.random()
+		if i < percent_test:
+			training_set.append(loans.iloc[line].values)
+		else: 
+			test_set.append(loans.iloc[line].values)
+	return test_set, training_set
 
-# Test the decision trees and run it on the test data	
+#create test and training set
+test_set, training_set = split_dataframe(loans)
+
+#confirm that they both exist
+print len(test_set)
+print len(training_set)
