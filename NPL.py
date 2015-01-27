@@ -99,7 +99,8 @@ loans = loans.drop(['Random stuff'], axis = 1) # axis 1 means column
 # separate data into training and test sets 
 def split_dataframe(dataframe): 
 
-	# initialize empry training and test sets 
+	# initialize empty training and test sets 
+	full_set = dataframe.values
 	training_set = []
 	test_set = []
 	num_rows = loans.shape[0]
@@ -109,14 +110,13 @@ def split_dataframe(dataframe):
 	for line in range(0,num_rows):
 		i = random.random()
 		if i < percent_test:
-			training_set.append(loans.iloc[line].values)
+			training_set.append(full_set[line])
+			#print(full_set[line])
 		else: 
-			test_set.append(loans.iloc[line].values)
+			test_set.append(full_set[line])
 	return test_set, training_set
 
 #create test and training set
 test_set, training_set = split_dataframe(loans)
 
-#confirm that they both exist
-print len(test_set)
-print len(training_set)
+#print test_set[0:2] #expected array of arrays 
