@@ -52,6 +52,8 @@ for parameter in loan_parameters:
 		df[parameter] = df[parameter].map(lambda x: float(x.replace('$', '').replace(',','')))
 		# these should not be floats, for greater accuracy they should be Decimal
 
+
+
 # ---------------------------------------------------------#
 #                 Make categorical data numerical          #
 # ---------------------------------------------------------#
@@ -94,6 +96,17 @@ for parameter in loan_parameters:
 
 # drop the random generator 
 df = df.drop(['Random stuff'], axis = 1) # axis 1 means column
+
+
+def get_train_parameters(data_set): 
+	# get the names of the training parameters:
+	train_parameters = list(data_set.columns.values)
+	# get rid of the label data 
+	train_parameters.pop()
+	return train_parameters 
+
+# get the names of the training parameters:
+train_parameters = get_train_parameters(df)	
 
 
 # ---------------------------------------------------------#
@@ -163,15 +176,15 @@ predictions = predict(test_set)
 # ---------------------------------------------------------#
 #                   Performance metrics                    #
 # ---------------------------------------------------------#
-
-for i in range(0,5):
-	print test_set[i]
-	target_index = len(test_set[0])-1
-	actual = test_set[i][target_index]
-	predicted = predictions[i]
-	print 'Predicted: %1.0f' % predicted
-	print 'Correct: %1.0f' % actual
-	print ''
+def predict_5_values(test_set): 
+	for i in range(0,5):
+		print test_set[i]
+		target_index = len(test_set[0])-1
+		actual = test_set[i][target_index]
+		predicted = predictions[i]
+		print 'Predicted: %1.0f' % predicted
+		print 'Correct: %1.0f' % actual
+		print ''
 
 def measure_error(predictions, test_set):
 
@@ -197,29 +210,42 @@ error_data = measure_error(predictions,test_set)
 #                      Feature importance                  #
 # ---------------------------------------------------------#
 
-feat_imp = rf.feature_importances_
+def graph_feat_importance(labels):
 
-print feat_imp
-print loan_parameters 
+	#create feature importance list: 
+	y = rf.feature_importances_
 
-def graph_feat_importance(data, labels):
+	# import data
+	x = labels
 
-	a = data # y values 
-	b = labels # x values
-	d = []    # make the x values numerical
-	for i in range (0,len(b)):
-		d.append(i)
+	#create a new figure:
+	fig = plt.figure()
+	# one row, one column, first:
+	ax = fig.add_subplot(1,1,1)
 
-	plt.bar(d,a, color='c', align='center')
-	plt.title('Feature importance')
-	plt.ylabel('Relative Importance')
-	plt.xlabel('Feature')
-	plt.xticks(d,b)
+	
+
+	#make a new axis with numerical values
+	axis = []
+	for i in range (0,len(x)):
+		axis.append(i)
+
+	# replace the numerical x axis with a label
+	plt.xticks(axis,labels) # makes the label replace the num axis
+	
+	# add a bar plot to the axis, ax.
+	ax.bar(axis,y, align = 'center')
+
+	# after you're all done with plotting commands, show the plot.
 	plt.show()
 
+def print_variable_imp(data, labels):	
+	print "Relative importances: \n"
+	for i in range(0, len(data)-1):
+		print labels[i]
+		print data[i]
 
-graph_feat_importance(feat_imp, loan_parameters)
-
+graph_feat_importance(train_parameters)
 
 #print 'the mean accuracy was %1.0f' % np.mean(accuracy_data)
 #print 'the median accuracy was %1.0f' % np.median(accuracy_data)
