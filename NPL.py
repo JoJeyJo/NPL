@@ -15,12 +15,12 @@ import random
 
 print('importing data...')
 # import sample data from S3 
-url = 'https://trello-attachments.s3.amazonaws.com/54522d0bd5a9e7596679dd06/54c620fa57b111af46716e5c/a79bc405e58353ef79e2bbbf9adc3290/Mock_data_LGD_-_Sheet1.csv'
+url = 'https://trello-attachments.s3.amazonaws.com/54522d0bd5a9e7596679dd06/54c620fa57b111af46716e5c/1f9e4dbd38fdb701c026453c95330dfb/large_data_set.csv'
+#url = 'https://trello-attachments.s3.amazonaws.com/54522d0bd5a9e7596679dd06/54c620fa57b111af46716e5c/a79bc405e58353ef79e2bbbf9adc3290/Mock_data_LGD_-_Sheet1.csv'
 response = urllib2.urlopen(url)
-
+	
 # convert csv data to pandas dataframe 
 loans = pd.read_csv(response)
-
 df = loans
 
 # ---------------------------------------------------------#
@@ -46,6 +46,8 @@ def is_currency(serie):
 
 # Get a list of index names: 
 loan_parameters = list(df.columns.values)
+
+print "loan parameters: " % loan_parameters
 
 for parameter in loan_parameters:
 	if is_currency(parameter):
@@ -87,7 +89,6 @@ for parameter in loan_parameters:
 	if is_categorical(parameter):
 		map_series(parameter)
 
-
 # ---------------------------------------------------------#
 #                   Drop unnecessary columns               #
 #           (might come from user interface later)         #
@@ -95,8 +96,9 @@ for parameter in loan_parameters:
 # ---------------------------------------------------------#
 
 # drop the random generator 
-df = df.drop(['Random stuff'], axis = 1) # axis 1 means column
+#df = df.drop(['Random stuff'], axis = 1) # axis 1 means column
 
+# get the names of the training parameters:
 
 def get_train_parameters(data_set): 
 	# get the names of the training parameters:
@@ -105,7 +107,6 @@ def get_train_parameters(data_set):
 	train_parameters.pop()
 	return train_parameters 
 
-# get the names of the training parameters:
 train_parameters = get_train_parameters(df)	
 
 
@@ -210,6 +211,7 @@ error_data = measure_error(predictions,test_set)
 #                      Feature importance                  #
 # ---------------------------------------------------------#
 
+#makes a graph of variable importance by feature 
 def graph_feat_importance(labels):
 
 	#create feature importance list: 
@@ -222,8 +224,6 @@ def graph_feat_importance(labels):
 	fig = plt.figure()
 	# one row, one column, first:
 	ax = fig.add_subplot(1,1,1)
-
-	
 
 	#make a new axis with numerical values
 	axis = []
@@ -239,7 +239,7 @@ def graph_feat_importance(labels):
 	# after you're all done with plotting commands, show the plot.
 	plt.show()
 
-def print_variable_imp(data, labels):	
+def print_variable_imp(data, labels):
 	print "Relative importances: \n"
 	for i in range(0, len(data)-1):
 		print labels[i]
